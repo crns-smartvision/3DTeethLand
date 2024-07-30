@@ -1,0 +1,3 @@
+[submodule "writeup-workflow"]
+	path = writeup-workflow
+	url = https://github.com/Sage-Bionetworks-Challenges/writeup-workflow
