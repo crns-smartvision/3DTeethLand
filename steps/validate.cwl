@@ -43,14 +43,14 @@ arguments:
 
 hints:
   DockerRequirement:
-    dockerPull: docker.synapse.org/syn57381674/evaluation:v1
+    dockerPull: docker.synapse.org/syn57400900/evaluation:v1
 
 s:author:
 - class: s:Person
   s:email: oussama.smaoui@synapse.org
   s:name: Oussama SMAOUI
 
-s:codeRepository: https://github.com/osmaoui/model-to-data-challenge-workflow/tree/main
+s:codeRepository: https://github.com/crns-smartvision/3DTeethLand
 s:license: https://spdx.org/licenses/Apache-2.0
 
 $namespaces:
