@@ -5,6 +5,7 @@ import trimesh
 import numpy as np
 import traceback
 import csv
+import torch
 
 LANDMARKS_CLASS = ["Mesial", "Distal", "Cusp", "InnerPoint", "OuterPoint", "FacialPoint"]
 
@@ -125,4 +126,8 @@ class LandmarkDet:  # LandmarkDetectionAlgorithm is not inherited in this class 
 
 
 if __name__ == "__main__":
+    if torch.cuda.is_available():
+        print("CUDA is available!")
+    else:
+        print("CUDA is not available.")
     LandmarkDet().process()

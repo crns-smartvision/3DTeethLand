@@ -8,6 +8,8 @@ import time
 
 import docker
 import synapseclient
+from docker.types import DeviceRequest
+
 
 
 def create_log_file(log_filename, log_text=None):
@@ -143,6 +145,8 @@ def main(syn, args):
         volumes[vol] = {'bind': mounted_volumes[vol].split(":")[0],
                         'mode': mounted_volumes[vol].split(":")[1]}
 
+    # GPU support: Add device requests for GPUs
+    device_requests = [DeviceRequest(count=-1, capabilities=[['gpu']])]
     # Look for if the container exists already, if so, reconnect
     print("checking for containers")
     container = None
@@ -163,7 +167,10 @@ def main(syn, args):
                                               detach=True, volumes=volumes,
                                               name=args.submissionid,
                                               network_disabled=True,
-                                              mem_limit='6g', stderr=True)
+                                              mem_limit='6g', stderr=True,
+                                              runtime = 'nvidia',  # Specify runtime as nvidia
+                                              device_requests = device_requests  # Specify GPU devices
+                                                )
         except docker.errors.APIError as err:
             remove_docker_container(args.submissionid)
             errors = str(err) + "\n"
