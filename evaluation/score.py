@@ -54,8 +54,29 @@ def score(gt_all, pred_all_map):
     for cat in recall.keys():
         ar = voc_ar(np.exp(-np.asarray(dist_thresh_list)), recall, cat)
         mar[cat] = ar
-    all_metrics = {"mAP": map, "mAR": mar}
+    all_metrics = {"AP": map, "AR": mar}
     return all_metrics
+
+
+def reformat_scores(scores):
+    fmt_scores = {}
+    metrics_cat = scores['AP']
+    fmt_scores["AP_cusp"] = metrics_cat['Cusp']
+    fmt_scores["AP_mesial_distal"] = (metrics_cat['Mesial'] + metrics_cat['Distal'])/2
+    fmt_scores["AP_inner_outer"] = (metrics_cat['InnerPoint'] + metrics_cat['OuterPoint'])/2
+    fmt_scores["AP_facial"] = metrics_cat['FacialPoint']
+    fmt_scores["mAP"] = (metrics_cat['Cusp'] + metrics_cat['Mesial'] + metrics_cat['Distal'] +
+                         metrics_cat['InnerPoint'] + metrics_cat['OuterPoint']+ metrics_cat['FacialPoint']) / 6
+
+    metrics_cat = scores['AR']
+    fmt_scores["AR_cusp"] = metrics_cat['Cusp']
+    fmt_scores["AR_mesial_distal"] = (metrics_cat['Mesial'] + metrics_cat['Distal'])/2
+    fmt_scores["AR_inner_outer"] = (metrics_cat['InnerPoint'] + metrics_cat['OuterPoint'])/2
+    fmt_scores["AR_facial"] = metrics_cat['FacialPoint']
+    fmt_scores["mAR"] = (metrics_cat['Cusp'] + metrics_cat['Mesial'] + metrics_cat['Distal'] +
+                         metrics_cat['InnerPoint'] + metrics_cat['OuterPoint'] + metrics_cat['FacialPoint']) / 6
+
+    return fmt_scores
 
 
 def main():
@@ -90,7 +111,7 @@ def main():
         gold = pickle.load(fp)
 
     scores = score(gold, pred_all_map)
-
+    scores = reformat_scores(scores)
     with open(args.output, "w") as out:
         res = {"submission_status": "SCORED", **scores}
         out.write(json.dumps(res))
