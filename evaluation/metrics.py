@@ -1,6 +1,44 @@
 import numpy as np
 # import matplotlib.pyplot as plt
 
+def voc_ar(dist_thresh_list, recall, keypoint_cat):
+    # correct AP calculation
+    # first append sentinel values at the end
+    mrec = np.array(dist_thresh_list[::-1])
+    mpre = np.array(recall[keypoint_cat][::-1])
+    mrec = np.concatenate(([0.], mrec, [1.]))
+    mpre = np.concatenate(([0.], mpre, [0.]))
+
+    # compute the recall envelope
+    for i in range(mpre.size - 1, 0, -1):
+        mpre[i - 1] = np.maximum(mpre[i - 1], mpre[i])
+
+    # to calculate area under PR curve, look for points
+    # where X axis (recall) changes value
+    i = np.where(mrec[1:] != mrec[:-1])[0]
+
+    # and sum (\Delta recall) * prec
+    ar = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
+
+    # plt.plot(mrec, mpre, label='AR Curve')
+    # plt.fill_between(mrec, mpre, color='skyblue', alpha=0.4)
+    #
+    # # Highlight segments contributing to AR
+    # for j in range(len(i)):
+    #     start_idx = i[j]
+    #     end_idx = i[j + 1] + 1 if j + 1 < len(i) else len(mrec) - 1
+    #     plt.plot(mrec[start_idx:end_idx], mpre[start_idx:end_idx], 'r-', alpha=0.7)
+    #
+    # plt.xlabel('dist threshold')
+    # plt.ylabel('Recall')
+    # plt.title(f'AR Curve')
+    # plt.title(f'{keypoint_cat}: Distance-recall Curve (AR={ar:.4f})')
+    # plt.ylim([0, 1])
+    # plt.xlim([0, 1])
+    # plt.legend()
+    # plt.grid(True)
+    # plt.show()
+    return ar
 
 def voc_ap(rec, prec, threshold, keypoint_cat):
     # correct AP calculation
