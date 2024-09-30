@@ -188,7 +188,7 @@ steps:
       - id: store
         default: true
       - id: input_dir
-        valueFrom: "/media/oussama/60d0458f-2f1f-4c73-bfe4-93757a0b94c541/3D_Data/Teeth3DS/TeethLand_s3/private_dataset/data"
+        valueFrom: "/tmp/data"
       - id: docker_script
         default:
           class: File
