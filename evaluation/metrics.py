@@ -161,3 +161,80 @@ def eval_map(pred_all, gt_all, dist_thresh=0.1):
 
     return rec, prec, ap
 
+
+def filter_scan(all_scans, scan_name):
+    all_filtered = {}
+    for category, data_dict in all_scans.items():
+        all_filtered[category] = {}
+        try:
+            all_filtered[category][scan_name] = all_scans[category][scan_name]
+        except:
+            all_filtered[category][scan_name] = []
+    return all_filtered
+
+
+def calculate_metrics_per_scan(pred_submission, gt_all):
+    pred_all_map = {
+        "Mesial": {},
+        "Distal": {},
+        "Cusp": {},
+        "InnerPoint": {},
+        "OuterPoint": {},
+        "FacialPoint": {}
+    }
+    scans_list = set()
+    for _, row in pred_submission.iterrows():
+        class_name = row['class']
+        key = row['key']
+        scans_list.add(key)
+        coord = [row['coord_x'], row['coord_y'], row['coord_z']]
+        prob = row['score']
+        if key not in pred_all_map[class_name]:
+            pred_all_map[class_name][key] = [[coord, prob]]
+        else:
+            pred_all_map[class_name][key].append([coord, prob])
+
+    all_metrics = {}
+    scans_list = list(gt_all['Cusp'].keys())
+    for scan in scans_list:
+        recall = {
+            "Mesial": [],
+            "Distal": [],
+            "Cusp": [],
+            "InnerPoint": [],
+            "OuterPoint": [],
+            "FacialPoint": []
+        }
+        dist_thresh_list = []
+        metrics = {}
+        gt = filter_scan(gt_all, scan)
+        pred = filter_scan(pred_all_map, scan)
+        # define distance threshold
+        for i in range(0, 30):
+            dist_thresh = 0.1 * i
+            rec, prec, ap = eval_map(pred, gt, dist_thresh=dist_thresh)
+            metrics[str(i)] = ap
+            dist_thresh_list.append(dist_thresh)
+            for cat in rec.keys():
+                try:
+                    recall[cat].append(rec[cat][-1])
+                except:
+                    recall[cat].append(0)
+        # Collect all values for each class
+        class_values = {'Mesial': [], 'Distal': [], 'Cusp': [], 'InnerPoint': [], 'OuterPoint': [], 'FacialPoint': []}
+        for threshold in metrics.values():
+            for class_name in class_values.keys():
+                class_values[class_name].append(threshold[class_name])
+
+        # Calculate the mean for each class
+        map = {class_name: sum(values) / len(values) for class_name, values in class_values.items()}
+
+        # Calculate mAR
+        mar = {}
+        for cat in recall.keys():
+            ar = voc_ar(np.exp(-np.asarray(dist_thresh_list)), recall, cat)
+            mar[cat] = ar
+
+        all_metrics[scan] = {}
+        all_metrics[scan] = {"mAP": map, "mAR": mar}
+    return all_metrics
