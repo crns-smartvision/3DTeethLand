@@ -105,14 +105,13 @@ if __name__ == "__main__":
         gt_all = pickle.load(fp)
     teams_predictions_files_path = glob(predictions_path + "/*/predictions.csv")
 
-    # metrics = {}
-    # for team_pred_file in tqdm(teams_predictions_files_path):
-    #     team_name = team_pred_file.split('/')[-2]
-    #     pred_submission = pd.read_csv(team_pred_file)
-    #     all_metrics = calculate_metrics_per_scan(pred_submission, gt_all)
-    #     metrics[team_name] = all_metrics
-    with open("metrics_dict.json", "r") as f:
-        metrics = json.load(f)
+    metrics = {}
+    for team_pred_file in tqdm(teams_predictions_files_path):
+        team_name = team_pred_file.split('/')[-2]
+        pred_submission = pd.read_csv(team_pred_file)
+        all_metrics = calculate_metrics_per_scan(pred_submission, gt_all)
+        metrics[team_name] = all_metrics
+
     # Bootstrapping process with 100 iterations and 90% resampling
     final_points = bootstrap_compare(metrics, scan_names=list(gt_all['Cusp'].keys()), alpha=0.001, n_bootstraps=100,
                                      resample_frac=0.9)
